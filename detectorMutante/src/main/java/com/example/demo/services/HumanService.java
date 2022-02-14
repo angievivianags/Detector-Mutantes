@@ -58,20 +58,24 @@ public class HumanService {
 
 		HumanModel humanModel = new HumanModel();
 		String adn = convertArrayToString(human.getADN());
-		if(humanRepository.findByADNSequence(adn) != null) {
+		if(humanRepository.findByADNSequence(adn) == null) {
 			humanModel.setSecuenciaADN(adn);
-			humanModel.setMutant(isMutant(human.getADN()));
-			humanModel = humanRepository.save(humanModel);
-			if (humanModel != null) {
-			LOGGER.info(new StringBuilder("{} NEGOCIO-FIN: ")
-					.append(Thread.currentThread().getStackTrace()[1].getMethodName()).append(" -> ").toString(),
-					this.getClass().getSimpleName());
-			return humanModel;
+			if (getVectorN_N(human.getADN()) != null) {
+				humanModel.setMutant(isMutant(human.getADN()));
+				humanModel = humanRepository.save(humanModel);
+				if (humanModel != null) {
+				LOGGER.info(new StringBuilder("{} NEGOCIO-FIN: ")
+						.append(Thread.currentThread().getStackTrace()[1].getMethodName()).append(" -> ").toString(),
+						this.getClass().getSimpleName());
+				return humanModel;
+			}else {
+				LOGGER.error("{} Error: [{}] ", "Save Human", "Human no se pudo guardar");
+				return  null;
+			}			
 			}else {
 				LOGGER.error("{} Error: [{}] ", "Save Human", "Human no se pudo guardar");
 				return  null;
 			}
-
 		}else {
 			LOGGER.error("{} Error: [{}] ", "Save Human", "El Humano ya se encuentra registrado");
 			return  null;
@@ -159,6 +163,9 @@ public class HumanService {
 		if (humanConsult == null) {
 			HumanModel humanModel = new HumanModel();
 			humanModel.setSecuenciaADN(adn);
+			if (getVectorN_N(human.getADN()) == null) {
+				return false;
+			}
 			Boolean isMutant = isMutant(human.getADN());
 			humanModel.setMutant(isMutant);
 			humanRepository.save(humanModel);
